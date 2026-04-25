@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: int_policy_claims
+    description: >
+      Policies joined with aggregated claim data.
+      ClaimNb is recomputed from severity records for corrupt policies
+      (IDpol <= 24500), fixing the known freMTPL2 data quality issue.
+    columns:
+      - name: policy_id
+        data_tests: [unique, not_null]
+      - name: claim_nb
+        data_tests: [not_null]
+        description: "Corrected claim count — severity-derived for corrupt policies"
+      - name: exposure
+        data_tests: [not_null]
+      - name: has_claim
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]

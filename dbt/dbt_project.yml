@@ -1,0 +1,19 @@
+name: insurance_pricing
+version: '1.0.0'
+config-version: 2
+
+profile: insurance_pricing
+
+model-paths: ["models"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  insurance_pricing:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    marts:
+      +materialized: table

@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: mart_freq_features
+    description: >
+      Modelling-ready frequency table. All policies included.
+      Target: claim_nb. Use log_exposure as offset in Poisson GLM.
+    columns:
+      - name: policy_id
+        data_tests: [unique, not_null]
+      - name: claim_nb
+        data_tests: [not_null]
+      - name: exposure
+        data_tests: [not_null]
+      - name: log_exposure
+        data_tests: [not_null]
+
+  - name: mart_sev_features
+    description: >
+      Modelling-ready severity table. Claims-only subset (~4% of policies).
+      Target: avg_claim_amount (capped at p99).
+    columns:
+      - name: policy_id
+        data_tests: [unique, not_null]
+      - name: avg_claim_amount
+        data_tests: [not_null]

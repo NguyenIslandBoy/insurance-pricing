@@ -1,0 +1,7 @@
+insurance_pricing:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../data/processed/insurance.duckdb
+      threads: 4

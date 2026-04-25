@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: stg_policies
+    description: >
+      Cleaned policy table. One row per policy.
+      Exposure clipped to (0,1], BonusMalus capped at 150,
+      corrupt ClaimNb zeroed and flagged.
+    columns:
+      - name: policy_id
+        data_tests: [unique, not_null]
+      - name: exposure
+        data_tests: [not_null]
+        description: "Clipped to (0.001, 1.0]"
+      - name: claim_nb
+        data_tests: [not_null]
+      - name: bonus_malus
+        data_tests: [not_null]
+        description: "Capped at 150"
+      - name: log_density
+        data_tests: [not_null]
+
+  - name: stg_claims
+    description: >
+      Cleaned claims table. One row per individual claim.
+      Zero/negative amounts excluded. Amounts capped at p99.
+    columns:
+      - name: policy_id
+        data_tests: [not_null]
+      - name: claim_amount
+        data_tests: [not_null]
+      - name: claim_amount_raw
+        data_tests: [not_null]

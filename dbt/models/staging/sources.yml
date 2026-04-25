@@ -1,0 +1,35 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw ingested tables from freMTPL2 CSVs"
+    schema: main
+    tables:
+      - name: raw_freq
+        description: "freMTPL2freq — policy risk features and claim counts"
+        columns:
+          - name: IDpol
+            description: "Policy ID — primary key"
+            data_tests:
+              - unique
+              - not_null
+          - name: Exposure
+            description: "Policy exposure in years (0, 1]"
+            data_tests:
+              - not_null
+          - name: ClaimNb
+            description: "Number of claims (zeroed for corrupt policies)"
+            data_tests:
+              - not_null
+
+      - name: raw_sev
+        description: "freMTPL2sev — individual claim amounts"
+        columns:
+          - name: IDpol
+            description: "Policy ID — foreign key to raw_freq"
+            data_tests:
+              - not_null
+          - name: ClaimAmount
+            description: "Claim amount in euros"
+            data_tests:
+              - not_null
