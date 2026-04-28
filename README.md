@@ -1,5 +1,7 @@
 # Insurance Pricing Pipeline
 
+![CI](https://github.com/NguyenIslandBoy/insurance-pricing/actions/workflows/ci.yml/badge.svg)
+
 End-to-end insurance pricing system for French Motor Third-Party Liability (MTPL) policies. Implements the actuarial **frequency-severity decomposition** using both GLM (industry standard) and LightGBM (challenger), with a dbt transformation layer and a FastAPI pricing endpoint.
 
 **Pure premium range:** €95 (low-risk) → €904 (high-risk) across tested profiles.
