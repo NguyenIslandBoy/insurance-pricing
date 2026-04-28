@@ -32,14 +32,14 @@ jobs:
       - name: Set up dbt profile
         run: |
           mkdir -p ~/.dbt
-          cat > ~/.dbt/profiles.yml << 'EOF'
-          insurance_pricing:
+          mkdir -p data/processed
+          echo "insurance_pricing:
             target: dev
             outputs:
               dev:
                 type: duckdb
-                path: data/processed/insurance.duckdb
-                threads: 1
+                path: ${GITHUB_WORKSPACE}/data/processed/insurance.duckdb
+                threads: 1" > ~/.dbt/profiles.yml
           EOF
           mkdir -p data/processed
 
