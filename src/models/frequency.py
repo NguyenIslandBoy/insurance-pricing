@@ -298,6 +298,28 @@ def save(
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+
+
+# ── Callable entry point for Prefect pipeline ─────────────────────────────────
+
+def run() -> dict:
+    """Run the full frequency modelling pipeline. Called by pipeline.py."""
+    df = load_data()
+    train, val = split_data(df)
+    glm_model, glm_cols = train_glm(train)
+    glm_results = evaluate_glm(glm_model, glm_cols, val)
+    lgbm_model, enc = train_lgbm(train, val)
+    lgbm_results = evaluate_lgbm(lgbm_model, enc, val)
+    shap_importance(lgbm_model, enc, val)
+    save(lgbm_model, glm_model, enc, glm_cols)
+    return {
+        "glm_rmse":      glm_results["rmse"],
+        "glm_deviance":  glm_results["deviance"],
+        "lgbm_rmse":     lgbm_results["rmse"],
+        "lgbm_deviance": lgbm_results["deviance"],
+    }
+
+
 if __name__ == "__main__":
     print("=" * 55)
     print("Frequency model (Poisson GLM + LightGBM)")
