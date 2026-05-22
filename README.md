@@ -41,6 +41,10 @@ insurance-pricing/
 │       ├── staging/                # stg_policies, stg_claims
 │       ├── intermediate/           # int_policy_claims (critical join + ClaimNb fix)
 │       └── marts/                  # mart_freq_features, mart_sev_features
+├── pipeline.py                     # Prefect orchestration (6 tasks, retries, logging)
+├── tests/
+│   ├── test_insurance_pipeline.py  # 53 unit tests (no data required)
+│   └── test_pipeline.py            # 15 Prefect flow structure tests
 └── requirements.txt
 ```
 
@@ -61,8 +65,10 @@ freMTPL2sev.csv     #  26,444 rows - individual claim amounts
 Download from [Kaggle](https://www.kaggle.com/datasets/floser/french-motor-claims-datasets-fremtpl2freq) or [Hugging Face](https://huggingface.co/datasets/mabilton/fremtpl2).
 
 **3. Ingest**
-```bash
-python src/ingest/loader.py
+```powershell
+python src/ingest/loader.py    # manual
+# or run the full orchestrated pipeline:
+python pipeline.py
 ```
 
 **4. dbt transformations** (from inside `dbt/` folder)
@@ -86,6 +92,38 @@ uvicorn src.api.app:app --reload --port 8000
 ```
 
 Swagger UI: `http://localhost:8000/docs`
+
+---
+
+## Pipeline Orchestration
+
+The pipeline is orchestrated with [Prefect](https://prefect.io), providing task-level retries, dependency enforcement, and a local observability UI.
+
+![Prefect pipeline run](./img/prefect_run.png)
+
+| Task | Retries | Depends on |
+|---|---|---|
+| `ingest` | 2 | — |
+| `dbt_run` | 1 | ingest |
+| `dbt_test` | 0 | dbt_run |
+| `train_frequency` | 1 | dbt_test |
+| `train_severity` | 1 | dbt_test |
+| `pure_premium` | 0 | train_frequency + train_severity |
+
+`dbt_test` has zero retries intentionally — a failing data quality test should stop the pipeline immediately rather than retry bad data.
+
+**Run with UI:**
+```powershell
+prefect server start          # terminal 1 — opens http://localhost:4200
+python pipeline.py            # terminal 2
+```
+
+**Run headless:**
+```powershell
+python pipeline.py                               # full run
+python pipeline.py --skip-ingest                 # skip CSV ingestion
+python pipeline.py --skip-ingest --skip-training # dbt only
+```
 
 ---
 
