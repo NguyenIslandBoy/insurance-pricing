@@ -127,6 +127,42 @@ python pipeline.py --skip-ingest --skip-training # dbt only
 
 ---
 
+## PySpark Silver Feature Engineering
+
+The pipeline includes a PySpark Silver layer that sits between the dbt
+transformation layer and model training, owning all feature engineering.
+
+**Single responsibility architecture:**
+
+| Layer | Tool | Responsibility |
+|---|---|---|
+| Bronze | DuckDB / dbt | Ingestion, ClaimNb fix, joins, cleaning |
+| Silver | PySpark | Feature engineering — flags, interactions, encodings |
+| Gold | scikit-learn / LightGBM | Model training, evaluation, artifacts |
+
+**Why PySpark:**
+At 678k policies the feature engineering is tractable in pandas. The PySpark
+implementation demonstrates the pattern that scales to a national insurer's
+full book (tens of millions of policies) without rewriting the logic. Feature
+pipelines are a primary Spark use case in production insurance and fintech DE.
+
+**Run the Silver layer:**
+```powershell
+python -m src.features.spark_features --dry-run  # validate row counts
+python -m src.features.spark_features             # write parquet
+```
+
+**Silver output** (`data/silver/`) — partitioned for downstream read efficiency:
+
+| Table | Rows | Partition |
+|---|---|---|
+| `freq_features` | 678,013 | `has_claim` |
+| `sev_features` | 24,944 | `has_large_claim` |
+
+Model training reads directly from Silver parquet — no DuckDB query at train time.
+
+---
+
 ## Data quality: known ClaimNb issue
 
 A documented flaw in freMTPL2freq: policies with `IDpol <= 24,500` have claim counts that don't match their severity records. The pipeline handles this explicitly:

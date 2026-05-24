@@ -24,7 +24,7 @@ import sys
 import pickle
 from pathlib import Path
 
-import duckdb
+# import duckdb
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -38,11 +38,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from config import (
-    DB_PATH, TABLE_FREQ_FEATURES,
-    CAT_COLS, MODELS_DIR,
-    POLICY_ID_COL,
-)
+# from config import (
+#     DB_PATH, TABLE_FREQ_FEATURES,
+#     CAT_COLS, MODELS_DIR,
+#     POLICY_ID_COL,
+# )
+from config import MODELS_DIR
 
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
 FREQ_FEATURE_COLS = [
@@ -59,12 +60,15 @@ EXPOSURE   = "exposure"
 
 # ── Load ──────────────────────────────────────────────────────────────────────
 
+SILVER_FREQ = Path(__file__).parent.parent.parent / "data" / "silver" / "freq_features"
+
 def load_data() -> pd.DataFrame:
-    if not DB_PATH.exists():
-        raise FileNotFoundError(f"DB not found: {DB_PATH}. Run loader + dbt first.")
-    con = duckdb.connect(str(DB_PATH), read_only=True)
-    df = con.execute(f"SELECT * FROM {TABLE_FREQ_FEATURES}").df()
-    con.close()
+    if not SILVER_FREQ.exists():
+        raise FileNotFoundError(
+            f"Silver layer not found at {SILVER_FREQ}. "
+            "Run src/features/spark_features.py first."
+        )
+    df = pd.read_parquet(SILVER_FREQ)
     print(f"Loaded: {df.shape[0]:,} rows x {df.shape[1]} cols")
     print(f"  Claim rate: {df[TARGET].mean():.4f} claims/policy")
     print(f"  Zero claims: {(df[TARGET] == 0).mean():.1%} of policies")

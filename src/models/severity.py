@@ -25,7 +25,7 @@ import sys
 import pickle
 from pathlib import Path
 
-import duckdb
+# import duckdb
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -39,7 +39,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from config import DB_PATH, TABLE_SEV_FEATURES
+# from config import DB_PATH, TABLE_SEV_FEATURES
 
 ARTIFACTS_DIR = Path(__file__).parent / "artifacts"
 
@@ -55,18 +55,20 @@ TARGET = "avg_claim_amount"
 
 # ── Load ──────────────────────────────────────────────────────────────────────
 
+SILVER_SEV = Path(__file__).parent.parent.parent / "data" / "silver" / "sev_features"
+
 def load_data() -> pd.DataFrame:
-    if not DB_PATH.exists():
-        raise FileNotFoundError(f"DB not found: {DB_PATH}")
-    con = duckdb.connect(str(DB_PATH), read_only=True)
-    df = con.execute(f"SELECT * FROM {TABLE_SEV_FEATURES}").df()
-    con.close()
+    if not SILVER_SEV.exists():
+        raise FileNotFoundError(
+            f"Silver layer not found at {SILVER_SEV}. "
+            "Run src/features/spark_features.py first."
+        )
+    df = pd.read_parquet(SILVER_SEV)
     print(f"Loaded: {df.shape[0]:,} rows (claims-only subset)")
     print(f"  Mean claim:   €{df[TARGET].mean():,.2f}")
     print(f"  Median claim: €{df[TARGET].median():,.2f}")
     print(f"  Max claim:    €{df[TARGET].max():,.2f}  (capped at p99)")
     return df
-
 
 # ── Split ─────────────────────────────────────────────────────────────────────
 

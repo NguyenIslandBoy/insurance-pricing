@@ -12,8 +12,6 @@ models:
         data_tests: [not_null]
       - name: exposure
         data_tests: [not_null]
-      - name: log_exposure
-        data_tests: [not_null]
 
   - name: mart_sev_features
     description: >
