@@ -25,9 +25,13 @@ The pricing methodology follows:
 insurance-pricing/
 ├── data/
 │   ├── raw/                        # freMTPL2freq.csv, freMTPL2sev.csv
-│   └── processed/                  # DuckDB database (generated)
+│   ├── processed/                  # DuckDB database (generated)
+│   └── silver/                     # PySpark feature parquet (generated)
+│       ├── freq_features/
+│       └── sev_features/
 ├── src/
 │   ├── ingest/loader.py            # CSV → DuckDB, fixes corrupt ClaimNb
+│   ├── features/spark_features.py  # PySpark Silver feature engineering
 │   ├── models/
 │   │   ├── frequency.py            # Poisson GLM + LightGBM frequency model
 │   │   ├── severity.py             # Gamma GLM + LightGBM severity model
@@ -41,10 +45,14 @@ insurance-pricing/
 │       ├── staging/                # stg_policies, stg_claims
 │       ├── intermediate/           # int_policy_claims (critical join + ClaimNb fix)
 │       └── marts/                  # mart_freq_features, mart_sev_features
+├── scripts/seed_ci.py              # Seeds synthetic data into DuckDB for CI dbt runs
+├── config.py                       # Central paths, table names, column definitions
 ├── pipeline.py                     # Prefect orchestration (6 tasks, retries, logging)
 ├── tests/
 │   ├── test_insurance_pipeline.py  # 53 unit tests (no data required)
-│   └── test_pipeline.py            # 15 Prefect flow structure tests
+│   ├── test_pipeline.py            # 15 Prefect flow structure tests
+│   └── test_spark_features.py      # PySpark Silver layer tests
+├── .github/workflows/ci.yml        # CI: dbt + pytest
 └── requirements.txt
 ```
 
